@@ -4,6 +4,10 @@ The author is not liable for any damage or harm that this product may cause.
 Crediting the Author is really appreciated.
 Hope this will add some value to your project.
 Have fun 😊
+
+Dependencies: jansi-1.18.jar (https://github.com/fusesource/jansi)
+    Library that adds Foreground and Background color to Win and UNIX Consoles
+
 */
 package alfoiralev;
 
@@ -14,9 +18,10 @@ package alfoiralev;
 import java.io.IOException;
 import java.util.Scanner;
 import java.util.InputMismatchException;
+import org.fusesource.jansi.AnsiConsole;
 
 /**
- * <b>Version 1 - 2020/04/26 00:26</b>
+ * <b>Version 2 - 2020/04/26 12:36</b>
  * <br>
  * Either extend this class or import it to use it 
  * <ul>
@@ -34,16 +39,45 @@ public class ConsoleManagement {
                 "option is invalid, press enter and try again...";
 	
 	private static final Scanner SC = new Scanner(System.in);
-
-	public final static void println(Object obj) {
-            System.out.println(obj);
-	}
+        
+        static {
+            loadAnsi(); // Load Ansi on startup
+            Runtime.getRuntime().addShutdownHook(   // Unload Ansi on exit
+                    new Thread(ConsoleManagement::unloadAnsi)
+            );
+        }
+        
 	public final static void println() {
             System.out.println();
 	}
+	public final static void println(Object obj) {
+            System.out.println(obj);
+	}
+	public final static void println(Object obj, ConsoleForeColor color) {
+            System.out.println(color.Code + obj);
+	}
+        public final static void println(
+                Object obj,
+                ConsoleForeColor colorFore,
+                ConsoleBackColor colorBack
+        ) {
+            System.out.println(colorFore.Code + colorBack.Code + obj);
+        }
 	public final static void print(Object obj) {
             System.out.print(obj);
 	}
+        public final static void print(Object obj, ConsoleForeColor color) {
+            System.out.print(color.Code + obj + ConsoleForeColor.RESET.Code);
+        }
+        public final static void print(
+                Object obj, 
+                ConsoleForeColor fgColor, 
+                ConsoleBackColor bgColor
+        ) {
+            System.out.print(fgColor.Code + bgColor.Code + obj + 
+                    ConsoleForeColor.RESET.Code
+            );
+        }
 
         /**
          * Simply clears the Console, for Windows and UNIX OSs
@@ -271,6 +305,21 @@ public class ConsoleManagement {
             os = 'o';   // Other OS, such as Linux (Unix)
         }
         return os;
+    }
+
+    private static void loadAnsi() {
+        if(System.console() != null) {
+            // Non IDE Console (Tested with NetBeans Console)
+            AnsiConsole.systemInstall();
+        }
+    }
+    
+    private static void unloadAnsi() {
+        if(System.console() != null) {
+            // Non IDE Console (Tested with NetBeans Console)
+            print(ConsoleForeColor.RESET.Code); // Also resets background color
+            AnsiConsole.systemUninstall();
+        }
     }
 	
 }
