@@ -21,7 +21,7 @@ import java.util.InputMismatchException;
 import org.fusesource.jansi.AnsiConsole;
 
 /**
- * <b>Version 2 - 2020/04/26 12:36</b>
+ * <b>Version 2.5 - 2020/04/26 16:18</b>
  * <br>
  * Either extend this class or import it to use it 
  * <ul>
@@ -39,6 +39,22 @@ public class ConsoleManagement {
                 "option is invalid, press enter and try again...";
 	
 	private static final Scanner SC = new Scanner(System.in);
+        
+        // The colors for the Menu and Messages
+        // Index 0: Foreground Color, Index 1: Background Color
+        private static final String[] COL_MENU_TITLE = 
+                new String[]{"", ""};
+        private static final String[] COL_MENU_DESCRIPTION = 
+                new String[]{"", ""};
+        private static final String[] COL_MENU_BACKOPTION = 
+                new String[]{"", ""}; 
+        private static final String[] COL_MENU_INPUTLISTEN =
+                new String[]{"", ""};
+        private static final String[] COL_INVALID_INPUT = 
+                new String[]{
+                        ConsoleForeColor.RED.Code,
+                        ""
+                };
         
         static {
             loadAnsi(); // Load Ansi on startup
@@ -122,18 +138,27 @@ public class ConsoleManagement {
                 String[] options
 	) {
             clearConsole();
-            println(title);
+            println(COL_MENU_TITLE[0] + COL_MENU_TITLE[1] + 
+                    title + 
+                    ConsoleForeColor.RESET.Code
+            );
             println();
-            println(description);
+            println(COL_MENU_DESCRIPTION[0] +  COL_MENU_DESCRIPTION[1] +
+                    description + 
+                    ConsoleForeColor.RESET.Code);
             println();
-            println(OPT_INPUT_BACK + " - " + backText);
+            println(COL_MENU_BACKOPTION[0] + COL_MENU_BACKOPTION[1] + 
+                    OPT_INPUT_BACK + " - " + backText +
+                    ConsoleForeColor.RESET.Code);
             println();
             for(int i = 0 ; i < options.length ; i++) {
                 println((i + 1) + " - " + options[i]);
             }
             println();
 
-            print(OPT_INPUT_LISTEN);
+            print(COL_MENU_INPUTLISTEN[0] + COL_MENU_INPUTLISTEN[1] + 
+                    OPT_INPUT_LISTEN +
+                    ConsoleForeColor.RESET.Code);
             try {
                 int response = SC.nextInt();
                 SC.nextLine();	// Flush Scanner
@@ -152,10 +177,62 @@ public class ConsoleManagement {
             }
 		
 	}
+        
+        /**
+         * If you have chosen to set menu colors for titles, descriptions, and
+         * such, you can reset them here
+         */
+        public static void resetMenuColors() {
+            for(int i = 0 ; i < 2 ; i++) {
+                COL_MENU_BACKOPTION[i] = "";
+                COL_MENU_DESCRIPTION[i] = "";
+                COL_MENU_INPUTLISTEN[i] = "";
+                COL_MENU_TITLE[i] = "";
+            }
+        }
+        
+        /**
+         * Set the foreground and background color for specific elements of the
+         * menu, or input messages, etc.
+         * @param elementType Element to set the color to. E.g the Menu Title
+         * @param foregroundColor The foreground color of the element
+         * @param backgroundColor The background color of the element
+         */
+        public static void setElementColor(
+                ElementColorType elementType,
+                ConsoleForeColor foregroundColor,
+                ConsoleBackColor backgroundColor
+        ) {
+            String fgCol = foregroundColor.Code;
+            String bgCol = backgroundColor.Code;
+            switch(elementType.type) {
+                case 'b':
+                    COL_MENU_BACKOPTION[0] = fgCol;
+                    COL_MENU_BACKOPTION[1] = bgCol;
+                    break;
+                case 'd':
+                    COL_MENU_DESCRIPTION[0] = fgCol;
+                    COL_MENU_DESCRIPTION[1] = bgCol;
+                    break;
+                case 'i':
+                    COL_MENU_INPUTLISTEN[0] = fgCol;
+                    COL_MENU_INPUTLISTEN[1] = bgCol;
+                    break;
+                case 't':
+                    COL_MENU_TITLE[0] = fgCol;
+                    COL_MENU_TITLE[1] = bgCol;
+                    break;
+                case 'n':
+                    COL_INVALID_INPUT[0] = fgCol;
+                    COL_INVALID_INPUT[1] = bgCol;
+            }
+        }
 	
 	private static void displayInvalidInput() {
             clearConsole();
-            print(INFO_INPUT_INVALID);
+            print(COL_INVALID_INPUT[0] + COL_INVALID_INPUT[1] + 
+                    INFO_INPUT_INVALID + ConsoleForeColor.RESET.Code
+            );
             SC.nextLine();
 	}
 
